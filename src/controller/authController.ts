@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import { User } from "../models/User.ts";
-import bcrypt from "bcrypt";
+import { User } from "../models/User";
+import bcrypt from 'bcrypt'
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 import { validationResult } from "express-validator";
@@ -294,3 +294,53 @@ export const resetPasswordController = async (req: Request, res: Response) => {
 };
 
 // change password
+
+export const changePasswordController = async (req: Request, res: Response) => {
+  try {
+    // handle all the validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        errrors: errors.array(),
+      });
+    }
+
+    // get current userId and inputs
+    
+    const { id } = req.user!;
+    const { currentPassword, newPassword } = req.body;
+
+    // get user
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "user not found",
+      });
+    }
+
+    //  check if the password matches the currently savedPassword in the db;
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!passwordMatch) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "wrong current password",
+      });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: "password changed successfully",
+    });
+  } catch (error: unknown) {
+    console.log("server error something went wrong =>", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "server errror something went wrong",
+    });
+  }
+};

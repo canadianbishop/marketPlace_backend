@@ -5,8 +5,13 @@ import {
   loginUserController,
   forgotPasswordController,
   resetPasswordController,
-} from "../controller/authController.ts";
-import { resetPasswordValidator } from "../validators/authValidators.ts";
+  changePasswordController,
+} from "../controller/authController";
+import {
+  changePasswordValidator,
+  resetPasswordValidator,
+} from "../validators/authValidators";
+import { authMiddleware } from "../middleware/authMiddlware";
 
 const authRoutes = express.Router();
 
@@ -28,5 +33,14 @@ authRoutes.patch(
   "/resetPassword",
   resetPasswordValidator,
   resetPasswordController,
+);
+
+// change password
+
+authRoutes.post(
+  "/changePassword",
+  authMiddleware,
+  changePasswordValidator,
+  changePasswordController,
 );
 export default authRoutes;

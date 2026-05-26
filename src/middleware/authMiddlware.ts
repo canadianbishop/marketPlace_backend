@@ -2,7 +2,12 @@ import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 
-export const authMiddlware = (
+interface JwtUserPayload {
+  id: string;
+  role: string;
+}
+
+export const authMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -26,12 +31,18 @@ export const authMiddlware = (
         message: "invalid  or missing token",
       });
     }
-    const decodedToken = jwt.verify(token, secretKey)
-    req.user= decodedToken;
+    const decodedToken = jwt.verify(token, secretKey)as JwtUserPayload
+    req.user = {
+      role:decodedToken.role,
+      id:decodedToken.id
+    }
      
   } catch (error: any) {
       console.error(error);
-      throw new Error('error =>', error)
+      return res.status(401).json({
+        success: false,
+        message: "Invalid or expired token",
+      });
   }
 
   console.log(authHeader);

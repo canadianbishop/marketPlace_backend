@@ -4,10 +4,11 @@ import { config } from "dotenv";
 import "dotenv/config";
 import morgan from "morgan";
 import compression from "compression";
-import connectDb from "../database/dbConnection.ts";
+import connectDb from "./database/dbConnection.js";
 import { query, validationResult } from "express-validator";
-import authRoutes from "../routes/authRoutes.ts";
-import productRoutes from "../routes/productRoutes.ts";
+import authRoutes from "./routes/authRoutes";
+import productRoutes from "./routes/productRoutes";
+import SellerRoutes from "./routes/sellerRoute";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes)
+app.use('/api/profile', SellerRoutes)
 config();
 
 app.get("/", query("person").notEmpty(), (req: Request, res: Response) => {

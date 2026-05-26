@@ -1,15 +1,12 @@
 {
   "name": "marketPlace_backend",
   "version": "1.0.0",
-  "type": "module",
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
-    "begin": "nodemon src/server.ts"
+    "start": "node dist src/server.js"
   },
   "keywords": [],
   "author": "",

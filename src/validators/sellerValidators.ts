@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 
 export const SellerValidators = [
   body("storeName").trim().notEmpty().withMessage("storeName is requires"),
@@ -29,3 +29,13 @@ export const SellerValidators = [
   .notEmpty()
   .withMessage("city is required"),
 ];
+
+
+
+
+
+// admin validators
+
+export const validateId = [
+  param('id').isMongoId().withMessage('empty or invalid seller Id')
+]

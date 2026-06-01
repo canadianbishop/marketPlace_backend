@@ -1,7 +1,8 @@
   import mongoose from "mongoose";
   import { Document } from "mongoose";
   import bcrypt from 'bcrypt'
-  interface IUser  extends Document {
+  
+  export interface IUser  extends Document {
     email: string;
     firstname: string;
     lastname: string;

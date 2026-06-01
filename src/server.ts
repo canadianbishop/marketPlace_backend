@@ -4,11 +4,12 @@ import { config } from "dotenv";
 import "dotenv/config";
 import morgan from "morgan";
 import compression from "compression";
-import connectDb from "./database/dbConnection.js";
+import connectDb from "./database/dbConnection";
 import { query, validationResult } from "express-validator";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
 import SellerRoutes from "./routes/sellerRoute";
+import adminRoute from "./routes/adminRoutes";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(morgan("dev"));
 // app.use(compression);
 app.use(express.json());
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoute)
 app.use('/api/products', productRoutes)
 app.use('/api/profile', SellerRoutes)
 config();

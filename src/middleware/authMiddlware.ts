@@ -45,7 +45,6 @@ export const authMiddleware = (
       });
   }
 
-  console.log(authHeader);
 
   next();
 };

@@ -1,10 +1,16 @@
 import express from "express";
 import { authMiddleware } from "../middleware/authMiddlware";
+import { validateProductQuery } from "../validators/productValidators";
+import { fetchAllProductController } from "../controller/productControllers";
+import { validateReq } from "../utils/validators";
 
 const productRoutes = express.Router();
 
-productRoutes.get("/allProducts", authMiddleware, (req: any, res: any) => {
-  res.status(200).send("welcome to products page");
-});
+// all products
 
+productRoutes.get('products', validateProductQuery,validateReq, fetchAllProductController)
+
+
+
+productRoutes.post
 export default productRoutes;

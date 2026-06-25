@@ -1,0 +1,70 @@
+[
+  {
+    "name": "iphone 24",
+    "price": 300,
+    "category": "phones",
+    "sellerId": {
+      "$oid": "6a2113094ad7bc85f855f33c"
+    },
+    "images": [
+      {
+        "imageUrl": "https://res.cloudinary.com/dwpmpk8lq/image/upload/v1782298778/products/zau64skysedc8nb9aodr.jpg",
+        "publicId": "products/zau64skysedc8nb9aodr",
+        "isMain": true,
+        "_id": {
+          "$oid": "6a3bb89c4eb4cc8e31f5777d"
+        }
+      },
+      {
+        "imageUrl": "https://res.cloudinary.com/dwpmpk8lq/image/upload/v1782298780/products/szhsenmhvkasdyapaedy.jpg",
+        "publicId": "products/szhsenmhvkasdyapaedy",
+        "isMain": false,
+        "_id": {
+          "$oid": "6a3bb89c4eb4cc8e31f5777e"
+        }
+      }
+    ],
+    "description": "an orginal iphone 16 with the latest ios update",
+    "createdAt": {
+      "$date": "2026-06-24T10:59:40.090Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-24T10:59:40.090Z"
+    },
+    "__v": 0
+  },
+  {
+    "name": "iphone 19",
+    "price": 250,
+    "category": "phones",
+    "sellerId": {
+      "$oid": "6a2113094ad7bc85f855f33c"
+    },
+    "images": [
+      {
+        "imageUrl": "https://res.cloudinary.com/dwpmpk8lq/image/upload/v1782298778/products/zau64skysedc8nb9aodr.jpg",
+        "publicId": "products/zau64skysedc8nb9aodr",
+        "isMain": true,
+        "_id": {
+          "$oid": "6a3bb89c4eb4cc8e31f5777d"
+        }
+      },
+      {
+        "imageUrl": "https://res.cloudinary.com/dwpmpk8lq/image/upload/v1782298780/products/szhsenmhvkasdyapaedy.jpg",
+        "publicId": "products/szhsenmhvkasdyapaedy",
+        "isMain": false,
+        "_id": {
+          "$oid": "6a3bb89c4eb4cc8e31f5777e"
+        }
+      }
+    ],
+    "description": "an orginal iphone 16 with the latest ios update",
+    "createdAt": {
+      "$date": "2026-06-24T10:59:40.090Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-24T10:59:40.090Z"
+    },
+    "__v": 0
+  }
+]

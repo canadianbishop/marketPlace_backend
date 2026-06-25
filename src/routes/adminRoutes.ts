@@ -33,7 +33,7 @@ adminRoute.get(
 // review seller application
 
 adminRoute.post(
-  "/dashboard/seller-application/review/:id",
+  "/dashboard/seller-review/:id",
   authMiddleware,
   adminMiddleware,
   validateId,
@@ -43,7 +43,7 @@ adminRoute.post(
 // approve seller
 
 adminRoute.post(
-  "/dashboard/application/approve/:id",
+  "/dashboard/approve-application/:id",
   authMiddleware,
   adminMiddleware,
   validateId,

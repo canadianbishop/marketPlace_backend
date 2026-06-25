@@ -5,7 +5,9 @@ import nodemailer from "nodemailer";
 import "dotenv/config";
 import { User } from "../models/User";
 import { SellerApplication } from "../models/SellerApplication";
+import { Product } from "../models/Products";
 
+// seller application
 export const sellerApplicationController = async (
   req: Request,
   res: Response,
@@ -106,6 +108,46 @@ export const sellerApplicationController = async (
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "internal server errror something went wrong",
+    });
+  }
+};
+
+// upload product
+
+export const uploadProductController = async (req: Request, res: Response) => {
+  try {
+    console.log("controller is runnign");
+    const { images, name, price, category, description } = req.body;
+    const { id } = req.user!;
+
+    //  check if images is present ;
+    if (!images || images.length === 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "product image is required",
+      });
+    }
+
+    const product = await Product.create({
+      name,
+      price: Number(price),
+      category,
+      description,
+      sellerId: id,
+      images,
+    });
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: "product uploaded successfully",
+      product: product.name,
+    });
+  } catch (error) {
+    console.log("internal server error =>", error);
+
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "internal server error something went wrong",
     });
   }
 };

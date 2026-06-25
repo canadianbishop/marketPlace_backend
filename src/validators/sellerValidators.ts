@@ -1,4 +1,4 @@
-import { body, param } from "express-validator";
+import { body, param, } from "express-validator";
 
 export const SellerValidators = [
   body("storeName").trim().notEmpty().withMessage("storeName is requires"),

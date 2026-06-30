@@ -151,3 +151,76 @@ export const uploadProductController = async (req: Request, res: Response) => {
     });
   }
 };
+
+// update product
+
+export const updateProductController = async (req: Request, res: Response) => {
+  try {
+    //  get the id of the product
+    const { id } = req.params;
+
+    // validate if the seller trying to update product is the seller that uploaded the product
+    const userId = req.user?.id;
+
+    const productDets = await Product.findById(id);
+
+    if (!productDets) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "product not found",
+      });
+    }
+
+    if (productDets.sellerId.toString() !== userId) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        success: false,
+        message: "product can only be updated by authorized seller",
+      });
+    }
+
+    // define the allowed feilds to update
+    const allowedFields = ["name", "price", "category", "description"];
+
+    // get the sent feilds
+    const sentFields = Object.keys(req.body);
+
+    // return an error if the array is empty;
+    if (sentFields.length === 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "you must at least send one updated field",
+      });
+    }
+
+    // check if all the sent fields are allowed
+    const isValidFields = sentFields.every((field) =>
+      allowedFields.includes(field),
+    );
+
+    if (!isValidFields) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "at least one unallowed fields is included",
+      });
+    }
+
+    // update the db
+    const product = await Product.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators:true
+    });
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: "product updated successfully",
+      data: product,
+    });
+  } catch (error) {
+    console.log("something went wrong server error =>", error);
+
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "internal server error",
+    });
+  }
+};

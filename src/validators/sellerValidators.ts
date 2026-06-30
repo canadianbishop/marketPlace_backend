@@ -1,4 +1,4 @@
-import { body, param, } from "express-validator";
+import { body, param } from "express-validator";
 
 export const SellerValidators = [
   body("storeName").trim().notEmpty().withMessage("storeName is requires"),
@@ -14,28 +14,44 @@ export const SellerValidators = [
     .isLength({ min: 20 })
     .withMessage("your justification must be at least twenty characters"),
 
-  body("country")
-  .trim()
-  .notEmpty()
-  .withMessage("country is required"),
+  body("country").trim().notEmpty().withMessage("country is required"),
 
-  body("state")
-  .trim()
-  .notEmpty()
-  .withMessage("state is required"),
+  body("state").trim().notEmpty().withMessage("state is required"),
 
-  body("city")
-  .trim()
-  .notEmpty()
-  .withMessage("city is required"),
+  body("city").trim().notEmpty().withMessage("city is required"),
 ];
-
-
-
-
 
 // admin validators
 
 export const validateId = [
-  param('id').isMongoId().withMessage('empty or invalid seller Id')
-]
+  param("id").isMongoId().withMessage("empty or invalid seller Id"),
+];
+
+// update product validator
+
+export const updateProductValidator = [
+  body("name")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("name cannot be empty if updated"),
+
+  body("price")
+    .optional()
+    .notEmpty()
+    .withMessage("price cannot be empty if updated")
+    .isFloat({ min: 1 })
+    .withMessage("price must be a positive number"),
+
+  body("category")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("category cannot be empty if updated"),
+
+  body("description")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("description cannot be empty if updated"),
+];

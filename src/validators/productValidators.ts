@@ -1,4 +1,4 @@
-import { body, query } from "express-validator";
+import { body, param, query } from "express-validator";
 
 // upload product validator
 export const ProductValidator = [
@@ -23,7 +23,6 @@ export const ProductValidator = [
 ];
 
 // get all product validator
-
 const allowedFeilds = ["name", "price", "category"];
 
 export const validateProductQuery = [
@@ -36,5 +35,14 @@ export const validateProductQuery = [
     .optional()
     .isIn(["createdAt", "name", "price", "category"])
     .withMessage("sortBy must be: name, price, category"),
-    
+];
+
+// product details validator
+
+export const validateProductId = [
+  param("id")
+    .notEmpty()
+    .withMessage("product id not provided")
+    .isMongoId()
+    .withMessage("product id is not a valid mongoId"),
 ];

@@ -18,7 +18,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoute)
-app.use('/api/products', productRoutes)
+app.use('/api', productRoutes)
 app.use('/api/profile', SellerRoutes)
 config();
 

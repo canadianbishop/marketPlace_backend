@@ -1,10 +1,14 @@
 import express from "express";
 import {
   sellerApplicationController,
+  updateProductController,
   uploadProductController,
 } from "../controller/sellerController";
 import { authMiddleware } from "../middleware/authMiddlware";
-import { SellerValidators } from "../validators/sellerValidators";
+import {
+  SellerValidators,
+  updateProductValidator,
+} from "../validators/sellerValidators";
 import { sellerMiddleware } from "../middleware/sellermiddlware";
 import { upload } from "../config/multer";
 import { ProductValidator } from "../validators/productValidators";
@@ -28,11 +32,11 @@ const validateReq = (req: Request, res: Response, next: NextFunction) => {
       errors: formattedErrors,
     });
   }
-  
 
   next();
 };
 
+// seller application route
 SellerRoutes.post(
   "/seller-application",
   authMiddleware,
@@ -41,16 +45,15 @@ SellerRoutes.post(
 );
 
 // upload products
-
 SellerRoutes.post(
   "/upload-product",
   authMiddleware,
   sellerMiddleware,
   upload.array("image", 4),
-  function (req:Request, res:Response, next:NextFunction){
-    console.log(req.body, req.files)
-    console.log(`this is price`, req.body.price)
-    next()
+  function (req: Request, res: Response, next: NextFunction) {
+    console.log(req.body, req.files);
+    console.log(`this is price`, req.body.price);
+    next();
   },
   ProductValidator,
   validateReq,
@@ -58,4 +61,14 @@ SellerRoutes.post(
   uploadProductController,
 );
 
+// update product route
+
+SellerRoutes.patch(
+  "/update/:id",
+  authMiddleware,
+  sellerMiddleware,
+  updateProductValidator,
+  validateReq,
+  updateProductController,
+);
 export default SellerRoutes;

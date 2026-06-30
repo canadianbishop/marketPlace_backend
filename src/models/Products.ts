@@ -1,5 +1,6 @@
 import mongoose, { Types } from "mongoose";
 import { Document } from "mongoose";
+import { IUser } from "./User";
 
 interface ProductImages extends Document {
   imageUrl: string;
@@ -12,7 +13,7 @@ interface IProduct extends Document {
   price: number;
   images: ProductImages[];
   category: string;
-  sellerId: Types.ObjectId | string;
+  sellerId: Types.ObjectId | string 
   description: String;
 }
 

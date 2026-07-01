@@ -15,6 +15,7 @@ interface IProduct extends Document {
   category: string;
   sellerId: Types.ObjectId | string 
   description: String;
+  isDeleted:boolean
 }
 
 const productSchema = new mongoose.Schema<IProduct>(
@@ -53,6 +54,11 @@ const productSchema = new mongoose.Schema<IProduct>(
         },
       },
     ],
+
+    isDeleted:{
+      type:Boolean,
+      default:false
+    },
     description: {
       type: String,
       required: [true, "product description is required"],
@@ -79,5 +85,17 @@ productSchema.pre("save", async function () {
     this.images[0].isMain= true;
   }
 });
+
+productSchema.pre('find', function(){
+  this.where({
+    isDeleted:false
+  })
+})
+
+productSchema.pre('findOne', function(){
+  this.where({
+    isDeleted:false
+  })
+})
 
 export const Product = mongoose.model<IProduct>("Product", productSchema);

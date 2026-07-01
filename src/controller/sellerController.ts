@@ -116,7 +116,6 @@ export const sellerApplicationController = async (
 
 export const uploadProductController = async (req: Request, res: Response) => {
   try {
-    console.log("controller is runnign");
     const { images, name, price, category, description } = req.body;
     const { id } = req.user!;
 
@@ -135,6 +134,7 @@ export const uploadProductController = async (req: Request, res: Response) => {
       description,
       sellerId: id,
       images,
+      isDeleted: false,
     });
 
     return res.status(StatusCodes.OK).json({
@@ -181,6 +181,13 @@ export const updateProductController = async (req: Request, res: Response) => {
     // define the allowed feilds to update
     const allowedFields = ["name", "price", "category", "description"];
 
+    if (!req.body) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "req.body is not a valid object",
+      });
+    }
+
     // get the sent feilds
     const sentFields = Object.keys(req.body);
 
@@ -207,7 +214,7 @@ export const updateProductController = async (req: Request, res: Response) => {
     // update the db
     const product = await Product.findByIdAndUpdate(id, req.body, {
       new: true,
-      runValidators:true
+      runValidators: true,
     });
 
     return res.status(StatusCodes.OK).json({
@@ -217,6 +224,51 @@ export const updateProductController = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.log("something went wrong server error =>", error);
+
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "internal server error",
+    });
+  }
+};
+
+// delet product
+
+export const deleteProductController = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    
+    // validate seller
+    const userId = req.user?.id;
+
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "product not found",
+      });
+    }
+
+    if (product.sellerId.toString() !== userId) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        success: false,
+        message: "unauthorized seller",
+      });
+    }
+
+    // delete product and return a message;
+    product.isDeleted= true;
+
+    await product.save()
+
+    return res.status(StatusCodes.OK).json({
+      success:true, 
+      message:'product deleted successfully'
+    })
+  } catch (error) {
+    console.log("internal server error=>", error);
 
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,

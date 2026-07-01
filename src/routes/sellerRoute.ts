@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  deleteProductController,
   sellerApplicationController,
   updateProductController,
   uploadProductController,
@@ -11,7 +12,10 @@ import {
 } from "../validators/sellerValidators";
 import { sellerMiddleware } from "../middleware/sellermiddlware";
 import { upload } from "../config/multer";
-import { ProductValidator } from "../validators/productValidators";
+import {
+  ProductValidator,
+  validateProductId,
+} from "../validators/productValidators";
 import { uploadImage } from "../middleware/uploadProductsMiddlware";
 import { Request, Response, NextFunction } from "express";
 import { validationResult } from "express-validator";
@@ -70,5 +74,14 @@ SellerRoutes.patch(
   updateProductValidator,
   validateReq,
   updateProductController,
+);
+
+SellerRoutes.delete(
+  "/produt/delete/:id",
+  authMiddleware,
+  sellerMiddleware,
+  validateProductId,
+  validateReq,
+  deleteProductController,
 );
 export default SellerRoutes;

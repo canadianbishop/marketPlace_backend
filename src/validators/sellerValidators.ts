@@ -30,6 +30,11 @@ export const validateId = [
 // update product validator
 
 export const updateProductValidator = [
+  param("id")
+    .notEmpty()
+    .withMessage("you must provide an id")
+    .isMongoId()
+    .withMessage("must be a valid mongodb Id"),
   body("name")
     .optional()
     .trim()

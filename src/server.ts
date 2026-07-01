@@ -19,7 +19,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoute)
 app.use('/api', productRoutes)
-app.use('/api/profile', SellerRoutes)
+app.use('/api/seller', SellerRoutes)
 config();
 
 app.get("/", query("person").notEmpty(), (req: Request, res: Response) => {

@@ -10,6 +10,7 @@ import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
 import SellerRoutes from "./routes/sellerRoute";
 import adminRoute from "./routes/adminRoutes";
+import orderRoutes from "./routes/orderRoutes";
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoute)
 app.use('/api', productRoutes)
 app.use('/api/seller', SellerRoutes)
+app.use('/order', orderRoutes)
 config();
 
 app.get("/", query("person").notEmpty(), (req: Request, res: Response) => {

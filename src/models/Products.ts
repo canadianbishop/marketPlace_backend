@@ -8,7 +8,7 @@ interface ProductImages extends Document {
   isMain: boolean;
 }
 
-interface IProduct extends Document {
+export interface IProduct extends Document {
   name: string;
   price: number;
   images: ProductImages[];

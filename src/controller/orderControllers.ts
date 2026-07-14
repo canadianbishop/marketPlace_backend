@@ -3,6 +3,9 @@ import { StatusCodes } from "http-status-codes";
 import { Cart } from "../models/Cart";
 import { Product } from "../models/Products";
 import { getCheckoutSummary, getMissingProducts } from "../utils/helpers";
+import { User } from "../models/User";
+import { initializeTransaction } from "../services/paystackService";
+import productRoutes from "../routes/productRoutes";
 
 export interface cartItem {
   productId: string;
@@ -22,6 +25,8 @@ export const checkoutController = async (req: Request, res: Response) => {
     const products = await Product.find({
       _id: { $in: productIds },
     });
+
+   ;
 
     // handle missing products
     const unavailableProducts = getMissingProducts(products, cart);
@@ -58,8 +63,12 @@ export const initializePaymentController = async (
 ) => {
   try {
     const { cart } = req.body;
+    const id = req.user?.id;
     //  extract all the product ids from the cart
     const productIds = cart.map((item: cartItem) => item.productId);
+
+
+
 
     // check if all the arrays of ids exist at once in the db;
     const products = await Product.find({
@@ -68,9 +77,15 @@ export const initializePaymentController = async (
       },
     });
 
+    
+
+    const test = await Product.findById("6a3d04eb1de4276f92219fb3");
+    
+    console.log(test)
+
     // handle missing product case
     const unavailableProducts = getMissingProducts(products, cart);
-    if (unavailableProducts) {
+    if (unavailableProducts.length !==0) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
         message: "some product were  not found",
@@ -79,7 +94,37 @@ export const initializePaymentController = async (
     }
 
     // get the cart summary
-    const { items, total } = getCheckoutSummary(cart, products);
+    const {total } = getCheckoutSummary(cart, products);
+   
+    // fetch authenticated user email 
+    const user = await User.findById(id).select('email');
+    if(!user){
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success:false,
+        message:'user not found while initializing payment'
+      })
+    }
+
+    const amountInKobo= total * 100;
+    const paymentInfo = {email:user.email, amount:amountInKobo}
     
-  } catch (error) {}
+    // initialize payement
+    const paymentResponse = await initializeTransaction(paymentInfo)
+
+    // feed the frontend
+    return res.status(StatusCodes.OK).json({
+      success:true,
+      data:{
+        url:paymentResponse.data.authorization_url,
+        reference:paymentResponse.data.reference
+      }
+    })
+    
+  } catch (error) {
+    console.log('internal server error', error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success:false, 
+      message:'internal server error'
+    })
+  }
 };

@@ -5,6 +5,7 @@ interface IntializeTransactionData {
   amount: number;
 }
 
+// initialize payment
 export const initializeTransaction = async ({email, amount}:IntializeTransactionData)=>{
 
     try {
@@ -31,4 +32,32 @@ export const initializeTransaction = async ({email, amount}:IntializeTransaction
         throw new Error('something went wrong initializing paystack payment')
     }
 
+}
+
+
+// verify payment
+
+export const verifyTransaction = async (reference:string)=>{
+     try {
+      if (!process.env.PAYSTACK_SECRET_KEY) {
+        throw new Error("Paystack secret key is missing");
+      }
+      const verify_url =
+        `https://api.paystack.co/transaction/verify/${reference}`;
+      
+        const config = {
+          headers: {
+            Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`
+          },
+        };
+      
+        const {data} = await axios.get(verify_url,config)
+        return data
+     } catch (error) {
+      if(axios.isAxiosError(error)){
+        console.log(error.response?.data)
+      }
+     }
+
+     throw new Error('an error occured while verifying transaction')
 }

@@ -49,6 +49,6 @@ const paymentSessionSchema = new mongoose.Schema<PaymentSession>({
             type:Number,
             required:[true, 'session must include a total amount payed']
       }
-})
+},{timestamps:true})
 
-const PaymentSession =  mongoose.model<PaymentSession>('PaymentSession', paymentSessionSchema)
+export const PaymentSession =  mongoose.model<PaymentSession>('PaymentSession', paymentSessionSchema)

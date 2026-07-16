@@ -11,7 +11,7 @@ interface OrderItem {
   image: string;
 }
 
-interface DeliveryInfo {
+export interface DeliveryInfo {
   shippingAddress: string;
   recipientsName: string;
   phone: string;
@@ -21,7 +21,6 @@ interface OrderData extends Document {
   userId: Types.ObjectId;
   items: OrderItem[];
   orderNumber: string;
-  subtotal: number;
   amountPaid: number;
   paymentReference: string;
   orderStatus: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
@@ -79,10 +78,6 @@ const orderSchema = new mongoose.Schema<OrderData>(
         },
       },
     ],
-    subtotal: {
-      type: Number,
-      required: true,
-    },
     amountPaid: {
       type: Number,
       required: true,

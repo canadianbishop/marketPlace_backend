@@ -4,10 +4,13 @@ import { Cart } from "../models/Cart";
 import { Product } from "../models/Products";
 import { getCheckoutSummary, getMissingProducts } from "../utils/helpers";
 import { User } from "../models/User";
-import { initializeTransaction } from "../services/paystackService";
+import {
+  initializeTransaction,
+  verifyTransaction,
+} from "../services/paystackService";
 import productRoutes from "../routes/productRoutes";
 import { PaymentSession } from "../models/paymentSession";
-import { INSPECT_MAX_BYTES } from "node:buffer";
+import { Order } from "../models/order";
 
 export interface cartItem {
   productId: string;
@@ -62,7 +65,7 @@ export const initializePaymentController = async (
   res: Response,
 ) => {
   try {
-    const { cart } = req.body;
+    const { cart, phone, shippingAddress, recipientsName } = req.body;
     const id = req.user?.id;
     //  extract all the product ids from the cart
     const productIds = cart.map((item: cartItem) => item.productId);
@@ -88,7 +91,7 @@ export const initializePaymentController = async (
     const { total, items } = getCheckoutSummary(cart, products);
 
     // fetch authenticated user email
-    const user = await User.findById(id).select("email");
+    const user = await User.findById(id).select("email").lean();
     if (!user) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
@@ -99,15 +102,20 @@ export const initializePaymentController = async (
     const amountInKobo = total * 100;
     const paymentInfo = { email: user.email, amount: amountInKobo };
 
+    console.log(paymentInfo)
+
     // initialize payement
     const paymentResponse = await initializeTransaction(paymentInfo);
 
     // save safe reference to paymentSession document;
 
+    const deliveryInfo = {phone, shippingAddress, recipientsName};
+
     await PaymentSession.create({
       userId: id,
       reference: paymentResponse.data.reference,
-      cart: cart,
+      deliveryInfo,
+      items: items,
       total: total,
     });
 
@@ -124,6 +132,86 @@ export const initializePaymentController = async (
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "internal server error",
+    });
+  }
+};
+
+// verify payment controller
+
+export const verifyPaymentController = async (req: Request, res: Response) => {
+  try {
+    // get the reference
+    const  reference  = req.params.reference as string;
+
+    if (!reference) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "Payment reference is required.",
+      });
+    }
+
+    // check if the reference exists
+    const paymentSession = await PaymentSession.findOne({ reference });
+    if (!paymentSession) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "payment session not found",
+      });
+    }
+
+    //check against completed payment
+    if (paymentSession.status !== "pending") {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        success: false,
+        message: "payment session is no longer active",
+      });
+    }
+
+    // verify payment;
+    const verifyPayment = await verifyTransaction(reference);
+
+    // i know at this point if the payment.data.status is not success we will catch the error in the catch block
+
+    // check the amount paid before the creation of th order;
+    if (verifyPayment.data.amount !== paymentSession.total * 100) {
+      
+      return res.status(StatusCodes.NOT_ACCEPTABLE).json({
+        success: false,
+        message: "failed to create order invalid amount paid",
+      });
+    }
+
+    // create order
+    const order = await Order.create({
+      orderNumber: `ORD-${Date.now()}`,
+      userId: paymentSession.userId,
+      amountPaid: verifyPayment.data.amount / 100,
+      items: paymentSession.items,
+      shippingFee: paymentSession.shippingFee,
+      tax: paymentSession.tax,
+      discount: paymentSession.discount,
+      paymentReference: reference,
+      deliveryInfo: paymentSession.deliveryInfo,
+      paymentStatus: "paid",
+      orderStatus: "pending",
+      total: paymentSession.total,
+    });
+
+    // update payment session 
+    paymentSession.status= 'completed';
+    await paymentSession.save();
+
+    // return a response;
+    res.status(StatusCodes.OK).json({
+      success:true,
+      message:'payment successful , order created !!',
+      order
+    })
+  } catch (error) {
+    console.log("something went wrong", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "something went wrong",
     });
   }
 };

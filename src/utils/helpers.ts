@@ -46,15 +46,16 @@ export const getCheckoutSummary = (cart: cartItem[], products: IProduct[]) => {
 
     return {
       ...item,
-      name: productDets.name,
-      price: productDets.price,
+      productName: productDets.name,
+      sellerId:productDets.sellerId,
+      unitPrice: productDets.price,
       image: productDets.images.find((img) => img.isMain)?.imageUrl,
-      subTotal: item.quantity * productDets.price,
+      subtotal: item.quantity * productDets.price,
     };
   });
 
-  const totalPrice = checkOutItems.reduce((acc: number, curr: cartItem) => {
-    return (acc += curr.subTotal!);
+  const totalPrice = checkOutItems.reduce((acc: number, curr) => {
+    return (acc += curr.subtotal!);
   }, 0);
 
   return {

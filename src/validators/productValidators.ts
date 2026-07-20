@@ -20,6 +20,8 @@ export const ProductValidator = [
     .trim()
     .notEmpty()
     .withMessage("product must have a description"),
+
+  body("stock").isInt({ min: 1 }).withMessage("stock must be at least one"),
 ];
 
 // get all product validator

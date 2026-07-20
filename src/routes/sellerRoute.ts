@@ -76,6 +76,8 @@ SellerRoutes.patch(
   updateProductController,
 );
 
+// delet products
+
 SellerRoutes.delete(
   "/produt/delete/:id",
   authMiddleware,
@@ -84,4 +86,8 @@ SellerRoutes.delete(
   validateReq,
   deleteProductController,
 );
+
+// view all orders endPoint
+
+
 export default SellerRoutes;

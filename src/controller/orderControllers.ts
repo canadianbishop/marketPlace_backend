@@ -11,6 +11,7 @@ import {
 import productRoutes from "../routes/productRoutes";
 import { PaymentSession } from "../models/paymentSession";
 import { Order } from "../models/order";
+import mongoose, { ClientSession, startSession } from "mongoose";
 
 export interface cartItem {
   productId: string;
@@ -102,14 +103,12 @@ export const initializePaymentController = async (
     const amountInKobo = total * 100;
     const paymentInfo = { email: user.email, amount: amountInKobo };
 
-    console.log(paymentInfo)
-
     // initialize payement
     const paymentResponse = await initializeTransaction(paymentInfo);
 
     // save safe reference to paymentSession document;
 
-    const deliveryInfo = {phone, shippingAddress, recipientsName};
+    const deliveryInfo = { phone, shippingAddress, recipientsName };
 
     await PaymentSession.create({
       userId: id,
@@ -139,9 +138,11 @@ export const initializePaymentController = async (
 // verify payment controller
 
 export const verifyPaymentController = async (req: Request, res: Response) => {
+  let session: ClientSession | null = null;
+
   try {
     // get the reference
-    const  reference  = req.params.reference as string;
+    const reference = req.params.reference as string;
 
     if (!reference) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -173,45 +174,84 @@ export const verifyPaymentController = async (req: Request, res: Response) => {
     // i know at this point if the payment.data.status is not success we will catch the error in the catch block
 
     // check the amount paid before the creation of th order;
-    if (verifyPayment.data.amount !== paymentSession.total * 100) {
-      
+    if (
+      verifyPayment.data.amount !== paymentSession.total * 100 ||
+      verifyPayment.data.status !== "success"
+    ) {
       return res.status(StatusCodes.NOT_ACCEPTABLE).json({
         success: false,
         message: "failed to create order invalid amount paid",
       });
     }
+    session = await startSession();
+    session.startTransaction();
+
+    // check stock and reduce
+
+    for (const item of paymentSession.items) {
+      const product = await Product.findOneAndUpdate(
+        { _id: item.productId, stock: { $gte: item.quantity } },
+        { $inc: { stock: -item.quantity } },
+        {
+          session,
+          new: true,
+        },
+      );
+
+      if (!product) {
+        throw new Error(
+          `insufficient stock for product ${item.productName}.  Requested quantity: ${item.quantity}.`,
+        );
+      }
+    }
 
     // create order
-    const order = await Order.create({
-      orderNumber: `ORD-${Date.now()}`,
-      userId: paymentSession.userId,
-      amountPaid: verifyPayment.data.amount / 100,
-      items: paymentSession.items,
-      shippingFee: paymentSession.shippingFee,
-      tax: paymentSession.tax,
-      discount: paymentSession.discount,
-      paymentReference: reference,
-      deliveryInfo: paymentSession.deliveryInfo,
-      paymentStatus: "paid",
-      orderStatus: "pending",
-      total: paymentSession.total,
-    });
+    const [order] = await Order.create(
+      [
+        {
+          orderNumber: `ORD-${Date.now()}`,
+          userId: paymentSession.userId,
+          amountPaid: verifyPayment.data.amount / 100,
+          items: paymentSession.items,
+          shippingFee: paymentSession.shippingFee,
+          tax: paymentSession.tax,
+          discount: paymentSession.discount,
+          paymentReference: reference,
+          deliveryInfo: paymentSession.deliveryInfo,
+          paymentStatus: "paid",
+          orderStatus: "pending",
+          total: paymentSession.total,
+        },
+      ],
+      { session },
+    );
 
-    // update payment session 
-    paymentSession.status= 'completed';
-    await paymentSession.save();
+    // update payment session
+    paymentSession.status = "completed";
+    await paymentSession.save({ session });
+
+    await session.commitTransaction();
 
     // return a response;
-    res.status(StatusCodes.OK).json({
-      success:true,
-      message:'payment successful , order created !!',
-      order
-    })
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: "payment successful , order created !!",
+      order,
+    });
   } catch (error) {
+    await session?.abortTransaction();
+    if(error instanceof Error){
+      return res.status(StatusCodes.CONFLICT).json({
+        success:false,
+        messsage:error.message
+      })
+    }
     console.log("something went wrong", error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "something went wrong",
     });
+  } finally {
+    await session?.endSession();
   }
 };

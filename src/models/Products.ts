@@ -13,6 +13,7 @@ export interface IProduct extends Document {
   price: number;
   images: ProductImages[];
   category: string;
+  stock:number;
   sellerId: Types.ObjectId | string 
   description: String;
   isDeleted:boolean
@@ -54,6 +55,13 @@ const productSchema = new mongoose.Schema<IProduct>(
         },
       },
     ],
+
+    stock:{
+      type:Number,
+      required:true,
+      min:0,
+      default:0
+    },
 
     isDeleted:{
       type:Boolean,

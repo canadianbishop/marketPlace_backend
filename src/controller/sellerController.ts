@@ -6,6 +6,14 @@ import "dotenv/config";
 import { User } from "../models/User";
 import { SellerApplication } from "../models/SellerApplication";
 import { Product } from "../models/Products";
+import { Order } from "../models/order";
+
+interface SellerOderItem{
+  productName:string,
+  orderNumber:string,
+  quantity:number,
+  paymentStatus:string
+}
 
 // seller application
 export const sellerApplicationController = async (
@@ -238,7 +246,6 @@ export const deleteProductController = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    
     // validate seller
     const userId = req.user?.id;
 
@@ -259,14 +266,14 @@ export const deleteProductController = async (req: Request, res: Response) => {
     }
 
     // delete product and return a message;
-    product.isDeleted= true;
+    product.isDeleted = true;
 
-    await product.save()
+    await product.save();
 
     return res.status(StatusCodes.OK).json({
-      success:true, 
-      message:'product deleted successfully'
-    })
+      success: true,
+      message: "product deleted successfully",
+    });
   } catch (error) {
     console.log("internal server error=>", error);
 
@@ -276,3 +283,92 @@ export const deleteProductController = async (req: Request, res: Response) => {
     });
   }
 };
+
+// get all orders
+
+export const getAllOrdersController = async (req: Request, res: Response) => {
+  try {
+    const id = req.user?.id;
+
+    // get only seller related orders
+
+    const orders = await Order.find({});
+
+    if (orders.length === 0) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: true,
+        message: "no order found",
+      });
+    }
+
+    // loop through the orders and get seller Products
+    let sellerOrders:SellerOderItem[] = [];
+
+    for (const order of orders) {
+      for (const item of order.items) {
+        if (item.sellerId.toString() === id) {
+          const newItem = {
+            ...item,
+            orderNumber: order.orderNumber,
+            paymentStatus: order.paymentStatus,
+          };
+          sellerOrders.push(newItem);
+        }
+      }
+    }
+
+    const order = sellerOrders.map(
+      (item) => (
+       { quantity:item.quantity,
+        productName:item.productName,
+        orderNumber:item.orderNumber,
+        paymentStatus:item.paymentStatus}
+      ),
+    );
+
+    if (order.length === 0) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: true,
+        message: "you currently have no order in your inventory",
+      });
+    }
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      order,
+    });
+  } catch (error) {
+    console.log("something went wrong", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "internal server error",
+    });
+  }
+};
+
+
+// get order details;
+
+export const getOrderDetailsController = async (req:Request, res:Response)=>{
+  try {
+    const id = req.user?.id;
+    
+    const orders = await Order.find({"items.sellerId": id});
+    
+    if(orders.length=== 0){
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success:true,
+        message:'no order found'
+      })
+    }
+    
+   
+
+  } catch (error) {
+     console.log('something went wrong', error);
+     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success:false,
+      message:'internal server error'
+     })
+  }
+}

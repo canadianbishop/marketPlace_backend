@@ -1,6 +1,7 @@
 import express from "express";
 import {
   deleteProductController,
+  getAllOrdersController,
   sellerApplicationController,
   updateProductController,
   uploadProductController,
@@ -88,6 +89,15 @@ SellerRoutes.delete(
 );
 
 // view all orders endPoint
+SellerRoutes.get(
+  "/orders/",
+  authMiddleware,
+  sellerMiddleware,
+  getAllOrdersController,
+);
+
+// get order details
+
 
 
 export default SellerRoutes;
